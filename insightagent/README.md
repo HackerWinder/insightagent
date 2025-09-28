@@ -2,7 +2,35 @@
 
 ![InsightAgent Logo](https://img.shields.io/badge/InsightAgent-AI%20Analysis-blue?style=for-the-badge&logo=robot)
 
-A comprehensive AI-powered system that automatically analyzes product market performance and user feedback by gathering data from multiple sources including Reddit and Product Hunt, then generating detailed insights and reports.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![React 18](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-green.svg)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-blue.svg)](https://www.docker.com/)
+
+## 🏷️ Project Tags
+
+`ai` `product-analysis` `fastapi` `react` `langchain` `reddit-api` `product-hunt` `market-research` `sentiment-analysis` `web-scraping` `machine-learning` `typescript` `postgresql` `redis` `docker` `websocket` `real-time` `data-collection` `business-intelligence` `automation`
+
+## 📋 Project Description
+
+**InsightAgent** is a comprehensive AI-powered product analysis platform that revolutionizes market research by automatically collecting, analyzing, and generating actionable insights from user discussions across multiple platforms. Built with modern web technologies, it provides real-time analysis of product performance, user sentiment, and market trends.
+
+### 🎯 Key Capabilities
+
+- **Multi-Platform Data Collection**: Automatically gathers user feedback from Reddit, Product Hunt, and other social platforms
+- **Advanced AI Analysis**: Leverages state-of-the-art language models to perform sentiment analysis, trend identification, and insight extraction
+- **Real-Time Processing**: WebSocket-powered live updates and task monitoring for instant results
+- **Comprehensive Reporting**: Generates detailed, structured reports with actionable business recommendations
+- **Scalable Architecture**: Microservices-based design with queue processing for handling large-scale analysis tasks
+
+### 🚀 Use Cases
+
+- **Product Managers**: Get instant insights into user feedback and market reception
+- **Marketing Teams**: Understand sentiment trends and identify key talking points
+- **Business Analysts**: Access comprehensive market data for strategic decision-making
+- **Startups**: Validate product-market fit through automated user feedback analysis
+- **Researchers**: Collect and analyze large-scale social media data for academic or commercial research
 
 ## 🚀 Features
 
