@@ -1,69 +1,216 @@
-# 多模态文档知识库问答系统（RAG + 多 Agent）
+# InsightAgent - AI-Powered Product Analysis System
 
-## 项目简介
+![InsightAgent Logo](https://img.shields.io/badge/InsightAgent-AI%20Analysis-blue?style=for-the-badge&logo=robot)
 
-基于RAG（检索增强生成）和多Agent协作技术的智能文档问答系统，支持多模态文档解析、向量化存储和智能问答。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![React 18](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-green.svg)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Docker-blue.svg)](https://www.docker.com/)
 
-## 技术栈
+## 🏷️ Project Tags
 
-- **后端**: Python 3.10+ / FastAPI / asyncio
-- **前端**: React + TypeScript + TailwindCSS
-- **向量数据库**: Chroma（默认），可切换 Milvus/FAISS
-- **大模型**: OpenAI API / DeepSeek API
-- **多Agent框架**: LangChain + LangGraph/MCP
-- **部署**: Docker / docker-compose
+`ai` `product-analysis` `fastapi` `react` `langchain` `reddit-api` `product-hunt` `market-research` `sentiment-analysis` `web-scraping` `machine-learning` `typescript` `postgresql` `redis` `docker` `websocket` `real-time` `data-collection` `business-intelligence` `automation`
 
-## 项目结构
+## 📋 Project Description
+
+**InsightAgent** is a comprehensive AI-powered product analysis platform that revolutionizes market research by automatically collecting, analyzing, and generating actionable insights from user discussions across multiple platforms. Built with modern web technologies, it provides real-time analysis of product performance, user sentiment, and market trends.
+
+### 🎯 Key Capabilities
+
+- **Multi-Platform Data Collection**: Automatically gathers user feedback from Reddit, Product Hunt, and other social platforms
+- **Advanced AI Analysis**: Leverages state-of-the-art language models to perform sentiment analysis, trend identification, and insight extraction
+- **Real-Time Processing**: WebSocket-powered live updates and task monitoring for instant results
+- **Comprehensive Reporting**: Generates detailed, structured reports with actionable business recommendations
+- **Scalable Architecture**: Microservices-based design with queue processing for handling large-scale analysis tasks
+
+### 🚀 Use Cases
+
+- **Product Managers**: Get instant insights into user feedback and market reception
+- **Marketing Teams**: Understand sentiment trends and identify key talking points
+- **Business Analysts**: Access comprehensive market data for strategic decision-making
+- **Startups**: Validate product-market fit through automated user feedback analysis
+- **Researchers**: Collect and analyze large-scale social media data for academic or commercial research
+
+## 🚀 Features
+
+- **Automated Data Collection**: Scrapes user discussions and feedback from Reddit and Product Hunt
+- **AI-Powered Analysis**: Uses advanced language models to analyze sentiment and extract key insights
+- **Real-time Processing**: WebSocket-based real-time updates and task monitoring
+- **Modern Web Interface**: Beautiful React frontend with responsive design
+- **Comprehensive API**: RESTful API with FastAPI backend
+- **Task Management**: Queue-based task processing with Redis
+- **Detailed Reports**: Generates structured analysis reports with actionable insights
+
+## 🏗️ Architecture
 
 ```
-├── backend/          # 后端服务
-├── frontend/         # 前端界面
-├── docs/            # 项目文档
-├── scripts/         # 部署脚本
-├── prd.md           # 产品需求文档
-└── README.md        # 项目说明
+InsightAgent/
+├── backend/                 # FastAPI Backend Service
+│   ├── app/
+│   │   ├── api/            # API Routes & Endpoints
+│   │   ├── core/           # Core Configuration
+│   │   ├── models/         # Database Models
+│   │   ├── services/       # Business Logic Services
+│   │   ├── tools/          # Data Collection Tools
+│   │   └── worker.py       # Background Task Worker
+│   ├── tests/              # Backend Test Suite
+│   └── requirements.txt    # Python Dependencies
+├── frontend/               # React Frontend Application
+│   ├── src/
+│   │   ├── components/     # React Components
+│   │   ├── pages/          # Page Components
+│   │   ├── services/       # API Client Services
+│   │   ├── store/          # State Management
+│   │   └── types/          # TypeScript Definitions
+│   └── package.json        # Node.js Dependencies
+├── docker-compose.yml      # Development Environment
+└── README.md
 ```
 
-## 快速开始
+## 🛠️ Tech Stack
 
-### 环境要求
+### Backend
+- **Framework**: FastAPI (Python 3.11+)
+- **AI/ML**: LangChain, OpenAI API
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Cache/Queue**: Redis
+- **Task Processing**: Celery-like worker system
+- **API Documentation**: Swagger/OpenAPI
 
-- Python 3.10+
-- Node.js 16+
-- Docker & Docker Compose
+### Frontend
+- **Framework**: React 18 with TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: Zustand
+- **HTTP Client**: Axios
+- **Real-time**: WebSocket connections
+- **Build Tool**: Create React App
 
-### 安装依赖
+### Infrastructure
+- **Containerization**: Docker & Docker Compose
+- **Database Migrations**: Alembic
+- **Testing**: Pytest (Backend), Jest (Frontend)
+- **Code Quality**: ESLint, Prettier
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ (for frontend development)
+- Python 3.11+ (for backend development)
+
+### Development Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/HackerWinder/insightagent.git
+   cd insightagent
+   ```
+
+2. **Environment Configuration**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys and configuration
+   ```
+
+3. **Start with Docker Compose**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Or start services individually**
+   ```bash
+   # Backend
+   cd backend
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   python -m app.main
+
+   # Frontend
+   cd frontend
+   npm install
+   npm start
+   ```
+
+5. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Documentation: http://localhost:8000/docs
+
+## 📊 Usage
+
+1. **Create Analysis Task**: Enter a product name in the web interface
+2. **Data Collection**: System automatically gathers data from Reddit and Product Hunt
+3. **AI Analysis**: Advanced language models analyze the collected data
+4. **Report Generation**: Detailed insights and recommendations are generated
+5. **View Results**: Access comprehensive reports through the web interface
+
+## 🔧 Configuration
+
+### Environment Variables
 
 ```bash
-# 后端依赖
+# Database
+DATABASE_URL=postgresql://user:password@localhost/insightagent
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# AI Services
+OPENAI_API_KEY=your_openai_api_key
+SILICONFLOW_API_KEY=your_siliconflow_api_key
+
+# External APIs
+REDDIT_CLIENT_ID=your_reddit_client_id
+REDDIT_CLIENT_SECRET=your_reddit_client_secret
+PRODUCT_HUNT_API_TOKEN=your_product_hunt_token
+```
+
+## 🧪 Testing
+
+### Backend Tests
+```bash
 cd backend
-pip install -r requirements.txt
-
-# 前端依赖
-cd frontend
-npm install
+pytest tests/
 ```
 
-### 运行项目
-
+### Frontend Tests
 ```bash
-# 使用Docker Compose一键启动
-docker-compose up -d
+cd frontend
+npm test
 ```
 
-## 功能特性
+## 📈 API Endpoints
 
-- ✅ 多格式文档解析（PDF/DOCX/HTML/TXT/MD）
-- ✅ 智能文本切分和向量化
-- ✅ 基于向量相似度的精准检索
-- ✅ 多Agent协作问答
-- ✅ 现代化Web界面
-- ✅ 私有化部署支持
+- `GET /api/v1/tasks/` - List all analysis tasks
+- `POST /api/v1/tasks/` - Create new analysis task
+- `GET /api/v1/tasks/{task_id}` - Get task details
+- `GET /api/v1/reports/{task_id}` - Get analysis report
+- `WebSocket /ws` - Real-time task updates
 
-## 开发计划
+## 🤝 Contributing
 
-详见 [PRD文档](prd.md)
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 许可证
+## 📝 License
 
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- OpenAI for providing the language models
+- Reddit and Product Hunt for data access
+- The open-source community for various libraries and tools
+
+## 📞 Support
+
+For support and questions, please open an issue on GitHub or contact the development team.
+
+---
+
+**Made with ❤️ by the InsightAgent Team**
