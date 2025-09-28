@@ -1,0 +1,47 @@
+import axios from 'axios';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+export const api = axios.create({
+  baseURL: `${API_BASE_URL}/api/v1`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 任务相关 API
+export const taskApi = {
+  // 创建任务
+  createTask: async (productName: string) => {
+    const response = await api.post('/tasks/', {
+      product_name: productName,
+    });
+    return response.data;
+  },
+
+  // 获取所有任务
+  getTasks: async () => {
+    const response = await api.get('/tasks/');
+    return response.data.tasks || [];
+  },
+
+  // 获取单个任务
+  getTask: async (taskId: string) => {
+    const response = await api.get(`/tasks/${taskId}`);
+    return response.data;
+  },
+
+  // 删除任务
+  deleteTask: async (taskId: string) => {
+    const response = await api.delete(`/tasks/${taskId}`);
+    return response.data;
+  },
+};
+
+// 健康检查 (这个直接在根路径)
+export const healthApi = {
+  check: async () => {
+    const response = await axios.get(`${API_BASE_URL}/health`);
+    return response.data;
+  },
+};

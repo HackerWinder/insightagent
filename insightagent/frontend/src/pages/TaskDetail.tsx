@@ -1,0 +1,361 @@
+import React, { useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { taskApi } from '../services/api';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { 
+  ArrowLeft, 
+  Download, 
+  Share2, 
+  Loader, 
+  TrendingUp,
+  Users,
+  Target,
+  Lightbulb,
+  FileText,
+  Calendar,
+  CheckCircle
+} from 'lucide-react';
+
+const TaskDetail: React.FC = () => {
+  const { taskId } = useParams<{ taskId: string }>();
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  
+  const { data: task, isLoading, error } = useQuery({
+    queryKey: ['task', taskId],
+    queryFn: () => taskApi.getTask(taskId!),
+    enabled: !!taskId,
+  });
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!reportRef.current || !task) return;
+    
+    setIsDownloading(true);
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      pdf.save(`${task.product_name}_分析报告_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      alert('PDF生成失败，请稍后重试');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader className="h-12 w-12 animate-spin mx-auto text-blue-600 mb-4" />
+              <p className="text-gray-600">加载任务详情中...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !task) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">加载失败</h3>
+            <p className="text-red-600">无法加载任务详情，请稍后重试</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (task.status !== 'completed' || !task.analysis_result) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Loader className="h-8 w-8 text-yellow-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">任务未完成</h3>
+            <p className="text-gray-600">任务仍在处理中或分析结果不可用</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const result = task.analysis_result;
+
+  // 处理报告内容和关键洞察的分离
+  // 从 key_insights 中提取完整的报告内容（通常是第一个且最长的项目）
+  const reportContent: string | null = result?.key_insights && Array.isArray(result.key_insights) && result.key_insights.length > 0 
+    ? (result.key_insights.find((insight: string) => insight.length > 500) || result.key_insights[0])
+    : null;
+
+  // 过滤出真正的关键洞察（较短的、总结性的内容）
+  const actualInsights: string[] = result?.key_insights && Array.isArray(result.key_insights) && result.key_insights.length > 0
+    ? result.key_insights.filter((insight: string) => insight.length <= 500 && insight !== reportContent)
+    : [];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 头部 */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <a
+                href="/"
+                className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-white/60 transition-all duration-200"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </a>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{task.product_name}</h1>
+                <div className="flex items-center text-sm text-gray-500 mt-1">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  完成时间: {formatDate(task.updated_at)}
+                </div>
+              </div>
+            </div>
+            <div className="flex space-x-3">
+              <button className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm text-gray-700 font-medium rounded-xl shadow-lg hover:bg-white/90 transition-all duration-200 border border-white/50">
+                <Share2 className="h-4 w-4 mr-2" />
+                分享
+              </button>
+              <button 
+                onClick={handleDownloadPDF}
+                disabled={isDownloading}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDownloading ? (
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                {isDownloading ? '生成中...' : '下载报告'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div ref={reportRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 主要内容 */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* 情感分析 */}
+            {result.sentiment_score !== null && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-blue-100 rounded-full mr-4">
+                    <TrendingUp className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">情感分析</h2>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-medium text-gray-700">整体情感评分</span>
+                    <span className={`text-2xl font-bold ${result.sentiment_score > 0 ? 'text-green-600' : result.sentiment_score < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                      {result.sentiment_score > 0 ? '+' : ''}{result.sentiment_score.toFixed(2)}
+                    </span>
+                  </div>
+                  {result.sentiment_distribution && (
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                          {Math.round((result.sentiment_distribution.positive || 0) * 100)}%
+                        </div>
+                        <div className="text-sm text-gray-600">正面</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-gray-600">
+                          {Math.round((result.sentiment_distribution.neutral || 0) * 100)}%
+                        </div>
+                        <div className="text-sm text-gray-600">中性</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-red-600">
+                          {Math.round((result.sentiment_distribution.negative || 0) * 100)}%
+                        </div>
+                        <div className="text-sm text-gray-600">负面</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 热门话题 */}
+            {result.top_topics && result.top_topics.length > 0 && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-purple-100 rounded-full mr-4">
+                    <Target className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">热门话题</h2>
+                </div>
+                <div className="space-y-3">
+                  {result.top_topics.map((topic: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                      <span className="font-medium text-gray-900">{topic.topic}</span>
+                      <span className="text-sm text-gray-600">权重: {topic.weight.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 关键洞察 */}
+            {actualInsights && actualInsights.length > 0 && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-amber-100 rounded-full mr-4">
+                    <Lightbulb className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">关键洞察</h2>
+                </div>
+                <div className="space-y-4">
+                  {actualInsights.map((insight: string, index: number) => (
+                    <div key={index} className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border-l-4 border-amber-400">
+                      <p className="text-gray-700 leading-relaxed">{insight}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 报告内容 */}
+            {reportContent && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-indigo-100 rounded-full mr-4">
+                    <FileText className="h-6 w-6 text-indigo-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">报告内容</h2>
+                </div>
+                <div className="prose max-w-none">
+                  <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                    {reportContent}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 功能需求 */}
+            {result.feature_requests && result.feature_requests.length > 0 && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-emerald-100 rounded-full mr-4">
+                    <Users className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">功能需求</h2>
+                </div>
+                <div className="space-y-3">
+                  {result.feature_requests.map((request: any, index: number) => (
+                    <div key={index} className="p-4 bg-emerald-50 rounded-xl">
+                      <p className="text-gray-700">{request}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 侧边栏 */}
+          <div className="space-y-6">
+            {/* 任务信息 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">任务信息</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-600">产品名称</label>
+                  <p className="text-gray-900 font-semibold">{task.product_name}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">创建时间</label>
+                  <p className="text-gray-900">{formatDate(task.created_at)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">完成时间</label>
+                  <p className="text-gray-900">{formatDate(task.updated_at)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">任务状态</label>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    已完成
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 分析统计 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">分析统计</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">情感评分</span>
+                  <span className="font-semibold">{result.sentiment_score?.toFixed(2) || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">热门话题</span>
+                  <span className="font-semibold">{result.top_topics?.length || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">关键洞察</span>
+                  <span className="font-semibold">{actualInsights?.length || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">功能需求</span>
+                  <span className="font-semibold">{result.feature_requests?.length || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TaskDetail;

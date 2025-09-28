@@ -1,0 +1,260 @@
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { taskApi } from '../services/api';
+import { 
+  ArrowLeft, 
+  Download, 
+  Share2, 
+  Loader, 
+  TrendingUp,
+  Users,
+  Target,
+  Lightbulb,
+  BarChart3,
+  Calendar,
+  CheckCircle
+} from 'lucide-react';
+
+const TaskDetail: React.FC = () => {
+  const { taskId } = useParams<{ taskId: string }>();
+  
+  const { data: task, isLoading, error } = useQuery({
+    queryKey: ['task', taskId],
+    queryFn: () => taskApi.getTask(taskId!),
+    enabled: !!taskId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader className="h-12 w-12 animate-spin mx-auto text-blue-600 mb-4" />
+              <p className="text-gray-600">加载任务详情中...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !task) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">加载失败</h3>
+            <p className="text-red-600">无法加载任务详情，请稍后重试</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (task.status !== 'completed' || !task.result) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Loader className="h-8 w-8 text-amber-600 animate-spin" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">任务处理中</h3>
+            <p className="text-gray-600">任务尚未完成，请稍后查看结果</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { result } = task;
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 头部 */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <a
+                href="/"
+                className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-white/60 transition-all duration-200"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </a>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{task.product_name}</h1>
+                <div className="flex items-center text-sm text-gray-500 mt-1">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  完成时间: {formatDate(task.updated_at)}
+                </div>
+              </div>
+            </div>
+            <div className="flex space-x-3">
+              <button className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm text-gray-700 font-medium rounded-xl shadow-lg hover:bg-white/90 transition-all duration-200 border border-white/50">
+                <Share2 className="h-4 w-4 mr-2" />
+                分享
+              </button>
+              <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200">
+                <Download className="h-4 w-4 mr-2" />
+                下载报告
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 主要内容 */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* 市场趋势 */}
+            {result.market_trends && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-blue-100 rounded-full mr-4">
+                    <TrendingUp className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">市场趋势</h2>
+                </div>
+                <div className="prose prose-gray max-w-none">
+                  <p className="text-gray-700 leading-relaxed">{result.market_trends}</p>
+                </div>
+              </div>
+            )}
+
+            {/* 用户画像 */}
+            {result.user_persona && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-emerald-100 rounded-full mr-4">
+                    <Users className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">用户画像</h2>
+                </div>
+                <div className="prose prose-gray max-w-none">
+                  <p className="text-gray-700 leading-relaxed">{result.user_persona}</p>
+                </div>
+              </div>
+            )}
+
+            {/* 竞争分析 */}
+            {result.competitive_analysis && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-purple-100 rounded-full mr-4">
+                    <Target className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">竞争分析</h2>
+                </div>
+                <div className="prose prose-gray max-w-none">
+                  <p className="text-gray-700 leading-relaxed">{result.competitive_analysis}</p>
+                </div>
+              </div>
+            )}
+
+            {/* 洞察建议 */}
+            {result.insights && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-8">
+                <div className="flex items-center mb-6">
+                  <div className="p-3 bg-amber-100 rounded-full mr-4">
+                    <Lightbulb className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">洞察建议</h2>
+                </div>
+                <div className="prose prose-gray max-w-none">
+                  <p className="text-gray-700 leading-relaxed">{result.insights}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 侧边栏 */}
+          <div className="space-y-6">
+            {/* 任务信息 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">任务信息</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-600">产品名称</label>
+                  <p className="text-gray-900 font-semibold">{task.product_name}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">创建时间</label>
+                  <p className="text-gray-900">{formatDate(task.created_at)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">完成时间</label>
+                  <p className="text-gray-900">{formatDate(task.updated_at)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">状态</label>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    已完成
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 数据来源 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">数据来源</h3>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  <span className="text-gray-700">市场研究报告</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                  <span className="text-gray-700">用户反馈数据</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                  <span className="text-gray-700">竞品分析</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-amber-500 rounded-full mr-3"></div>
+                  <span className="text-gray-700">行业趋势</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 快速操作 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/50 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">快速操作</h3>
+              <div className="space-y-3">
+                <button className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  生成图表
+                </button>
+                <button className="w-full flex items-center justify-center px-4 py-2 bg-white/60 text-gray-700 font-medium rounded-xl shadow border border-white/50 hover:bg-white/80 transition-all duration-200">
+                  <Download className="h-4 w-4 mr-2" />
+                  导出PDF
+                </button>
+                <button className="w-full flex items-center justify-center px-4 py-2 bg-white/60 text-gray-700 font-medium rounded-xl shadow border border-white/50 hover:bg-white/80 transition-all duration-200">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  分享链接
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TaskDetail;

@@ -1,0 +1,191 @@
+"""
+任务相关的Pydantic schemas
+"""
+from pydantic import BaseModel, Field, validator
+from typing import Optional, Dict, Any, List
+from datetime import datetime
+from uuid import UUID
+
+from app.models.task import TaskStatus, LogLevel
+
+
+class TaskCreate(BaseModel):
+    """创建任务的请求模型"""
+    product_name: str = Field(..., min_length=1, max_length=255, description="产品或公司名称")
+    user_id: Optional[str] = Field(None, min_length=1, max_length=255, description="用户ID")
+
+    @validator('product_name')
+    def validate_product_name(cls, v):
+        """验证产品名称"""
+        if not v or not v.strip():
+            raise ValueError('产品名称不能为空')
+        # 移除多余的空格
+        return v.strip()
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "product_name": "Figma",
+                "user_id": "user123"
+            }
+        }
+
+
+class TaskUpdate(BaseModel):
+    """更新任务的请求模型"""
+    status: Optional[TaskStatus] = None
+    progress: Optional[float] = Field(None, ge=0.0, le=1.0, description="任务进度 (0.0-1.0)")
+    error_message: Optional[str] = None
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "status": "RUNNING",
+                "progress": 0.5,
+                "error_message": None
+            }
+        }
+
+
+class TaskResponse(BaseModel):
+    """任务响应模型"""
+    id: UUID
+    user_id: str
+    product_name: str
+    status: TaskStatus
+    progress: float
+    error_message: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+        schema_extra = {
+            "example": {
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "user_id": "user123",
+                "product_name": "Figma",
+                "status": "RUNNING",
+                "progress": 0.5,
+                "error_message": None,
+                "created_at": "2024-01-01T00:00:00Z",
+                "updated_at": "2024-01-01T00:30:00Z"
+            }
+        }
+
+
+class TaskLogCreate(BaseModel):
+    """创建任务日志的请求模型"""
+    task_id: UUID
+    level: LogLevel
+    message: str = Field(..., min_length=1, description="日志消息")
+    step: Optional[str] = Field(None, max_length=255, description="执行步骤")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "task_id": "123e4567-e89b-12d3-a456-426614174000",
+                "level": "INFO",
+                "message": "开始从Reddit收集数据",
+                "step": "data_collection"
+            }
+        }
+
+
+class TaskLogResponse(BaseModel):
+    """任务日志响应模型"""
+    id: UUID
+    task_id: UUID
+    timestamp: datetime
+    level: LogLevel
+    message: str
+    step: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class RawDataCreate(BaseModel):
+    """创建原始数据的请求模型"""
+    task_id: UUID
+    source: str = Field(..., min_length=1, max_length=100, description="数据源")
+    data: Dict[str, Any] = Field(..., description="原始数据")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "task_id": "123e4567-e89b-12d3-a456-426614174000",
+                "source": "reddit",
+                "data": {
+                    "posts": [
+                        {"title": "Great product!", "score": 100, "comments": 50}
+                    ]
+                }
+            }
+        }
+
+
+class RawDataResponse(BaseModel):
+    """原始数据响应模型"""
+    id: UUID
+    task_id: UUID
+    source: str
+    data: Dict[str, Any]
+    collected_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AnalysisResultCreate(BaseModel):
+    """创建分析结果的请求模型"""
+    task_id: UUID
+    sentiment_score: Optional[float] = Field(None, ge=-1.0, le=1.0, description="情感评分 (-1.0 到 1.0)")
+    sentiment_distribution: Optional[Dict[str, float]] = None
+    top_topics: Optional[List[Dict[str, Any]]] = None
+    feature_requests: Optional[List[Dict[str, Any]]] = None
+    key_insights: Optional[List[str]] = None
+
+
+class AnalysisResultResponse(BaseModel):
+    """分析结果响应模型"""
+    id: UUID
+    task_id: UUID
+    sentiment_score: Optional[float]
+    sentiment_distribution: Optional[Dict[str, float]]
+    top_topics: Optional[List[Dict[str, Any]]]
+    feature_requests: Optional[List[Dict[str, Any]]]
+    key_insights: Optional[List[str]]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TaskListResponse(BaseModel):
+    """任务列表响应模型"""
+    tasks: List[TaskResponse]
+    total: int
+    page: int
+    page_size: int
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "tasks": [
+                    {
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "user_id": "user123",
+                        "product_name": "Figma",
+                        "status": "COMPLETED",
+                        "progress": 1.0,
+                        "error_message": None,
+                        "created_at": "2024-01-01T00:00:00Z",
+                        "updated_at": "2024-01-01T01:00:00Z"
+                    }
+                ],
+                "total": 1,
+                "page": 1,
+                "page_size": 10
+            }
+        }
